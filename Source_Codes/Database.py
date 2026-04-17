@@ -1,4 +1,3 @@
-# Database.py - UPDATE THE PASSWORD IN BOTH PLACES
 import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
@@ -28,4 +27,4 @@ def load_clean_data_to_db(healthcare_data):
         if_exists="replace",
         index=False
     )
-    print("\n✅ Cleaned data loaded into PostgreSQL")
+    print("\n Cleaned data loaded into PostgreSQL")

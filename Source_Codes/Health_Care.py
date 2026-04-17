@@ -1,12 +1,12 @@
 # Health_Care.py
 
 # 1. IMPORT the logic from your other files
-from Database import load_data, load_clean_data_to_db
-from Pipeline import run_pipeline
-from Train_Model import train_model
+from Source_Codes.Database import load_data, load_clean_data_to_db
+from Source_Codes.Pipeline import run_pipeline
+from Source_Codes.Train_Model import train_model
 
 def main():
-    print("--- 🚀 Starting Pipeline ---")
+    print("--- Starting Pipeline ---")
 
     # 2. STEP 1: Load (From Database.py)
     df_raw = load_data()
@@ -22,7 +22,7 @@ def main():
     # Step 5: Train the machine learning model
     train_model(df_cleaned)
 
-    print("\n--- ✨ Pipeline Finished Successfully ---")
+    print("\n--- Pipeline Finished Successfully ---")
 
 if __name__ == "__main__":
     main()

@@ -30,12 +30,12 @@ def ensure_model_assets():
     os.makedirs(MODELS_DIR, exist_ok=True)
 
     if os.path.exists(MODEL_PATH) and os.path.exists(ENCODER_PATH):
-        print("✅ Existing model assets found. Loading...")
+        print(" Existing model assets found. Loading...")
         model = joblib.load(MODEL_PATH)
         label_encoder = joblib.load(ENCODER_PATH)
         return model, label_encoder
 
-    print("⚠️ Model file not found. Training a new model from dataset...")
+    print(" Model file not found. Training a new model from dataset...")
 
     if not os.path.exists(DATA_PATH):
         raise FileNotFoundError(f"Dataset not found at: {DATA_PATH}")

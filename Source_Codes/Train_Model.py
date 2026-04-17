@@ -24,7 +24,7 @@ from catboost import CatBoostClassifier
 
 
 def train_model(df_cleaned, save_dir="Models"):
-    print("\n🚀 Starting Model Training...")
+    print("\n Starting Model Training...")
 
     os.makedirs(save_dir, exist_ok=True)
 
@@ -80,7 +80,7 @@ def train_model(df_cleaned, save_dir="Models"):
 
     for name, model in models.items():
         print(f"\n{'=' * 60}")
-        print(f"🔍 Training {name}...")
+        print(f" Training {name}...")
         print(f"{'=' * 60}")
 
         pipeline = Pipeline(steps=[
@@ -108,7 +108,7 @@ def train_model(df_cleaned, save_dir="Models"):
         }
         trained_pipelines[name] = pipeline
 
-        print(f"\n📊 {name} Performance:")
+        print(f"\n {name} Performance:")
         print(f"Accuracy:   {accuracy:.4f}")
         print(f"Precision:  {precision:.4f}")
         print(f"Recall:     {recall:.4f}")
@@ -121,7 +121,7 @@ def train_model(df_cleaned, save_dir="Models"):
         print(cm)
 
     print(f"\n{'=' * 60}")
-    print("📌 MODEL COMPARISON SUMMARY")
+    print(" MODEL COMPARISON SUMMARY")
     print(f"{'=' * 60}")
     for model_name, metrics in results.items():
         print(
@@ -135,7 +135,7 @@ def train_model(df_cleaned, save_dir="Models"):
     best_model_name = max(results, key=lambda x: results[x]["f1_score"])
     best_model = trained_pipelines[best_model_name]
 
-    print(f"\n🏆 Best Model: {best_model_name}")
+    print(f"\n Best Model: {best_model_name}")
     print(f"Best Accuracy:  {results[best_model_name]['accuracy']:.4f}")
     print(f"Best Precision: {results[best_model_name]['precision']:.4f}")
     print(f"Best Recall:    {results[best_model_name]['recall']:.4f}")
@@ -147,7 +147,7 @@ def train_model(df_cleaned, save_dir="Models"):
     joblib.dump(best_model, model_path)
     joblib.dump(label_encoder, encoder_path)
 
-    print(f"\n✅ Best model saved as {model_path}")
-    print(f"✅ Label encoder saved as {encoder_path}")
+    print(f"\n Best model saved as {model_path}")
+    print(f" Label encoder saved as {encoder_path}")
 
     return best_model, label_encoder

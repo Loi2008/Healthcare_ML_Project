@@ -2,9 +2,9 @@ import sys
 from datetime import datetime
 
 # Import your pipeline components
-from Database import load_data, load_clean_data_to_db
-from Pipeline import run_pipeline
-from Train_Model import train_model
+from Source_Codes.Database import load_data, load_clean_data_to_db
+from Source_Codes.Pipeline import run_pipeline
+from Source_Codes.Train_Model import train_model
 
 
 def retrain_pipeline():
