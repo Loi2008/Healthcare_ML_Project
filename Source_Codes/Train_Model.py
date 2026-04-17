@@ -1,3 +1,4 @@
+import os
 import joblib
 import pandas as pd
 
@@ -22,30 +23,23 @@ from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
 
 
-# Train and compare multiple machine learning models
-def train_model(df_cleaned):
-    print("\n Starting Model Training...")
+def train_model(df_cleaned, save_dir="Models"):
+    print("\n🚀 Starting Model Training...")
 
-    # Separate features and target
+    os.makedirs(save_dir, exist_ok=True)
+
     X = df_cleaned.drop("test_results", axis=1)
     y = df_cleaned["test_results"]
 
-    # Encode target labels for models like XGBoost
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
 
-    print("\nClass mapping:")
-    for i, class_name in enumerate(label_encoder.classes_):
-        print(f"{class_name} -> {i}")
-
-    # Identify categorical and numerical columns
     categorical_cols = X.select_dtypes(include=["object", "string", "str"]).columns
     numeric_cols = X.select_dtypes(exclude=["object", "string", "str"]).columns
 
-    print("\nCategorical columns:", list(categorical_cols))
+    print("Categorical columns:", list(categorical_cols))
     print("Numeric columns:", list(numeric_cols))
 
-    # Preprocess data
     preprocessor = ColumnTransformer(
         transformers=[
             ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
@@ -53,16 +47,10 @@ def train_model(df_cleaned):
         ]
     )
 
-    # Split data
     X_train, X_test, y_train, y_test = train_test_split(
         X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
     )
 
-    print("\nData split completed.")
-    print("Training set size:", X_train.shape[0])
-    print("Testing set size:", X_test.shape[0])
-
-    # Define models
     models = {
         "Logistic Regression": LogisticRegression(max_iter=3000),
         "Random Forest": RandomForestClassifier(
@@ -90,10 +78,9 @@ def train_model(df_cleaned):
     results = {}
     trained_pipelines = {}
 
-    # Train and evaluate each model
     for name, model in models.items():
         print(f"\n{'=' * 60}")
-        print(f" Training {name}...")
+        print(f"🔍 Training {name}...")
         print(f"{'=' * 60}")
 
         pipeline = Pipeline(steps=[
@@ -101,24 +88,18 @@ def train_model(df_cleaned):
             ("classifier", model)
         ])
 
-        # Train the model
         pipeline.fit(X_train, y_train)
-
-        # Make predictions
         y_pred = pipeline.predict(X_test)
 
-        # Convert predictions back to original class labels
         y_test_labels = label_encoder.inverse_transform(y_test)
         y_pred_labels = label_encoder.inverse_transform(y_pred)
 
-        # Calculate metrics
         accuracy = accuracy_score(y_test_labels, y_pred_labels)
         precision = precision_score(y_test_labels, y_pred_labels, average="weighted", zero_division=0)
         recall = recall_score(y_test_labels, y_pred_labels, average="weighted", zero_division=0)
         f1 = f1_score(y_test_labels, y_pred_labels, average="weighted", zero_division=0)
         cm = confusion_matrix(y_test_labels, y_pred_labels)
 
-        # Store results
         results[name] = {
             "accuracy": accuracy,
             "precision": precision,
@@ -127,8 +108,7 @@ def train_model(df_cleaned):
         }
         trained_pipelines[name] = pipeline
 
-        # Print metrics
-        print(f"\n {name} Performance:")
+        print(f"\n📊 {name} Performance:")
         print(f"Accuracy:   {accuracy:.4f}")
         print(f"Precision:  {precision:.4f}")
         print(f"Recall:     {recall:.4f}")
@@ -140,7 +120,6 @@ def train_model(df_cleaned):
         print("Confusion Matrix:")
         print(cm)
 
-    # Print model comparison summary
     print(f"\n{'=' * 60}")
     print("📌 MODEL COMPARISON SUMMARY")
     print(f"{'=' * 60}")
@@ -153,21 +132,22 @@ def train_model(df_cleaned):
             f"F1-score={metrics['f1_score']:.4f}"
         )
 
-    # Select the best model based on F1-score
     best_model_name = max(results, key=lambda x: results[x]["f1_score"])
     best_model = trained_pipelines[best_model_name]
 
-    print(f"\n Best Model: {best_model_name}")
+    print(f"\n🏆 Best Model: {best_model_name}")
     print(f"Best Accuracy:  {results[best_model_name]['accuracy']:.4f}")
     print(f"Best Precision: {results[best_model_name]['precision']:.4f}")
     print(f"Best Recall:    {results[best_model_name]['recall']:.4f}")
     print(f"Best F1-score:  {results[best_model_name]['f1_score']:.4f}")
 
-    # Save the best model and label encoder
-    joblib.dump(best_model, "best_healthcare_model.pkl")
-    joblib.dump(label_encoder, "label_encoder.pkl")
+    model_path = os.path.join(save_dir, "best_healthcare_model.pkl")
+    encoder_path = os.path.join(save_dir, "label_encoder.pkl")
 
-    print("\n Best model saved as best_healthcare_model.pkl")
-    print(" Label encoder saved as label_encoder.pkl")
+    joblib.dump(best_model, model_path)
+    joblib.dump(label_encoder, encoder_path)
+
+    print(f"\n✅ Best model saved as {model_path}")
+    print(f"✅ Label encoder saved as {encoder_path}")
 
     return best_model, label_encoder

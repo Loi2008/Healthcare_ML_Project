@@ -12,5 +12,8 @@ wheels/
 # data
 Data/healthcare_dataset.csv
 
-model
+# Ignore all model files
 Models/*.pkl
+
+# BUT allow label encoder
+!Models/label_encoder.pkl
