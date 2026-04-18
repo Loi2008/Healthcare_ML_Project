@@ -9,9 +9,6 @@ wheels/
 # Virtual environments
 .venv
 
-# data
-Data/healthcare_dataset.csv
-
 # Ignore all model files
 Models/*.pkl
 
