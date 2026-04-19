@@ -2,5 +2,5 @@ services:
   - type: web
     name: healthcare-api
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r Deployment/requirements.txt
     startCommand: uvicorn Source_Codes.api:app --host 0.0.0.0 --port $PORT
