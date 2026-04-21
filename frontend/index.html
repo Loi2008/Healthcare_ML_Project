@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Healthcare Prediction App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1f3c88;
+      margin-bottom: 10px;
+    }
+
+    p {
+      text-align: center;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cfd8dc;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1f3c88;
+      box-shadow: 0 0 0 2px rgba(31, 60, 136, 0.15);
+    }
+
+    button {
+      margin-top: 24px;
+      background: #1f3c88;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #16306b;
+    }
+
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 10px;
+      background: #eef3fb;
+      display: none;
+    }
+
+    .result h2 {
+      margin-top: 0;
+      color: #1f3c88;
+    }
+
+    .probability-list {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+
+    .error {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #fdecea;
+      color: #b71c1c;
+      display: none;
+    }
+
+    .loading {
+      margin-top: 20px;
+      text-align: center;
+      color: #1f3c88;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Healthcare Prediction App</h1>
+    <p>Predict patient test results as Normal, Abnormal, or Inconclusive.</p>
+
+    <form id="predictionForm">
+      <label for="age">Age</label>
+      <input type="number" id="age" min="0" max="120" required />
+
+      <label for="gender">Gender</label>
+      <select id="gender" required>
+        <option value="">Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+
+      <label for="blood_type">Blood Type</label>
+      <select id="blood_type" required>
+        <option value="">Select blood type</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+      </select>
+
+      <label for="medical_condition">Medical Condition</label>
+      <input type="text" id="medical_condition" required />
+
+      <label for="billing_amount">Billing Amount</label>
+      <input type="number" id="billing_amount" min="0" step="0.01" required />
+
+      <label for="insurance_provider">Insurance Provider</label>
+      <input type="text" id="insurance_provider" required />
+
+      <label for="admission_type">Admission Type</label>
+      <select id="admission_type" required>
+        <option value="">Select admission type</option>
+        <option value="Emergency">Emergency</option>
+        <option value="Urgent">Urgent</option>
+        <option value="Elective">Elective</option>
+      </select>
+
+      <label for="medication">Medication</label>
+      <input type="text" id="medication" required />
+
+      <label for="length_of_stay">Length of Stay</label>
+      <input type="number" id="length_of_stay" min="0" required />
+
+      <button type="submit">Predict</button>
+    </form>
+
+    <div class="loading" id="loading">
+      Predicting...
+    </div>
+
+    <div class="error" id="errorBox"></div>
+
+    <div class="result" id="resultBox">
+      <h2>Prediction Result</h2>
+      <p><strong>Predicted Test Result:</strong> <span id="predictedResult"></span></p>
+      <p><strong>Confidence:</strong> <span id="confidence"></span></p>
+      <p><strong>Model Version:</strong> <span id="modelVersion"></span></p>
+
+      <div id="probabilitiesSection">
+        <strong>Probabilities:</strong>
+        <ul class="probability-list" id="probabilitiesList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("predictionForm");
+    const resultBox = document.getElementById("resultBox");
+    const errorBox = document.getElementById("errorBox");
+    const loading = document.getElementById("loading");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      resultBox.style.display = "none";
+      errorBox.style.display = "none";
+      loading.style.display = "block";
+
+      const payload = {
+        age: Number(document.getElementById("age").value),
+        gender: document.getElementById("gender").value,
+        blood_type: document.getElementById("blood_type").value,
+        medical_condition: document.getElementById("medical_condition").value,
+        billing_amount: Number(document.getElementById("billing_amount").value),
+        insurance_provider: document.getElementById("insurance_provider").value,
+        admission_type: document.getElementById("admission_type").value,
+        medication: document.getElementById("medication").value,
+        length_of_stay: Number(document.getElementById("length_of_stay").value)
+      };
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        loading.style.display = "none";
+
+        if (!response.ok) {
+          errorBox.style.display = "block";
+          errorBox.innerText = data.detail ? JSON.stringify(data.detail, null, 2) : "Prediction failed.";
+          return;
+        }
+
+        document.getElementById("predictedResult").innerText = data.predicted_test_result ?? "N/A";
+        document.getElementById("confidence").innerText =
+          data.confidence !== null && data.confidence !== undefined
+            ? `${(data.confidence * 100).toFixed(2)}%`
+            : "N/A";
+
+        document.getElementById("modelVersion").innerText = data.model_version ?? "N/A";
+
+        const probabilitiesList = document.getElementById("probabilitiesList");
+        probabilitiesList.innerHTML = "";
+
+        if (data.probabilities) {
+          Object.entries(data.probabilities).forEach(([label, prob]) => {
+            const li = document.createElement("li");
+            li.textContent = `${label}: ${(prob * 100).toFixed(2)}%`;
+            probabilitiesList.appendChild(li);
+          });
+        }
+
+        resultBox.style.display = "block";
+
+      } catch (error) {
+        loading.style.display = "none";
+        errorBox.style.display = "block";
+        errorBox.innerText = "An error occurred while calling the API.";
+      }
+    });
+  </script>
+</body>
+</html>
